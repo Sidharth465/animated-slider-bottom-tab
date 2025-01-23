@@ -1,15 +1,17 @@
-import type { PropsWithChildren, ReactElement } from 'react';
-import { StyleSheet } from 'react-native';
+import { useRef, type PropsWithChildren, type ReactElement } from 'react';
+import { NativeScrollEvent, NativeSyntheticEvent, StyleSheet } from 'react-native';
 import Animated, {
   interpolate,
   useAnimatedRef,
   useAnimatedStyle,
   useScrollViewOffset,
+  withTiming,
 } from 'react-native-reanimated';
 
 import { ThemedView } from '@/components/ThemedView';
 import { useBottomTabOverflow } from '@/components/ui/TabBarBackground';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { useSharedState } from '@/context/SharedContext';
 
 const HEADER_HEIGHT = 250;
 
@@ -23,18 +25,22 @@ export default function ParallaxScrollView({
   headerImage,
   headerBackgroundColor,
 }: Props) {
+  const {scrollY} = useSharedState()
   const colorScheme = useColorScheme() ?? 'light';
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
   const scrollOffset = useScrollViewOffset(scrollRef);
   const bottom = useBottomTabOverflow();
+  // by sid 
+const prevScrollY=  useRef(0);
+
   const headerAnimatedStyle = useAnimatedStyle(() => {
     return {
       transform: [
         {
           translateY: interpolate(
             scrollOffset.value,
-            [-HEADER_HEIGHT, 0, HEADER_HEIGHT],
-            [-HEADER_HEIGHT / 2, 0, HEADER_HEIGHT * 0.75]
+            [-HEADER_HEIGHT, 0, HEADER_HEIGHT,HEADER_HEIGHT],
+            [-HEADER_HEIGHT / 2, 0,HEADER_HEIGHT*1.2, HEADER_HEIGHT * 0.75]
           ),
         },
         {
@@ -43,10 +49,24 @@ export default function ParallaxScrollView({
       ],
     };
   });
+  const handleOnScroll = (event:NativeSyntheticEvent<NativeScrollEvent>)=>{
+
+    const currentScrollY = event.nativeEvent.contentOffset.y
+const isScrollingDown = currentScrollY > prevScrollY?.current;
+scrollY.value = isScrollingDown ? withTiming(1,{duration:300}):withTiming(0,{duration:300})
+    
+  
+
+
+  }
 
   return (
     <ThemedView style={styles.container}>
       <Animated.ScrollView
+      bounces ={false}
+      showsVerticalScrollIndicator ={false}
+
+      onScroll={handleOnScroll}
         ref={scrollRef}
         scrollEventThrottle={16}
         scrollIndicatorInsets={{ bottom }}
@@ -78,5 +98,6 @@ const styles = StyleSheet.create({
     padding: 32,
     gap: 16,
     overflow: 'hidden',
+
   },
 });
