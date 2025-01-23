@@ -52,11 +52,12 @@ const prevScrollY=  useRef(0);
   const handleOnScroll = (event:NativeSyntheticEvent<NativeScrollEvent>)=>{
 
     const currentScrollY = event.nativeEvent.contentOffset.y
-const isScrollingDown = currentScrollY > prevScrollY?.current;
-scrollY.value = isScrollingDown ? withTiming(1,{duration:300}):withTiming(0,{duration:300})
-    
-  
 
+const isScrollingDown = currentScrollY > prevScrollY?.current;
+console.log("currentScrollY",currentScrollY, "prevScrollY",prevScrollY.current)
+console.log("isScrollinnDown",isScrollingDown)
+scrollY.value = isScrollingDown ? withTiming(1,{duration:300}):withTiming(0,{duration:300})
+prevScrollY.current = currentScrollY;
 
   }
 
